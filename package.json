@@ -1,5 +1,5 @@
 {
-  "name": "@QuayConnect/trpc-openapi",
+  "name": "@quayconnect/trpc-openapi",
   "version": "1.2.0",
   "description": "tRPC OpenAPI",
   "author": "James Berry <jb@jamesbe.com>",
