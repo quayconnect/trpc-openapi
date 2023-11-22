@@ -1,5 +1,5 @@
 {
-  "name": "trpc-openapi",
+  "name": "@QuayConnect/trpc-openapi",
   "version": "1.2.0",
   "description": "tRPC OpenAPI",
   "author": "James Berry <jb@jamesbe.com>",
@@ -11,7 +11,13 @@
     "swagger"
   ],
   "homepage": "https://github.com/jlalmes/trpc-openapi",
-  "repository": "github:jlalmes/trpc-openapi",
+  "repository":{
+    "type": "git",
+    "url": "https://github.com/quayconnect/trpc-openapi",
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/QuayConnect"
+  }
   "bugs": "https://github.com/jlalmes/trpc-openapi/issues",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
