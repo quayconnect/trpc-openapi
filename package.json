@@ -36,14 +36,16 @@
   },
   "peerDependencies": {
     "@trpc/server": "^10.0.0",
-    "zod": "^3.14.4"
+    "zod": "^3.21.4"
   },
   "dependencies": {
+    "@anatine/zod-openapi": "^2.2.1",
     "co-body": "^6.1.0",
     "h3": "^1.6.4",
     "lodash.clonedeep": "^4.5.0",
     "node-mocks-http": "^1.12.2",
     "openapi-types": "^12.1.1",
+    "openapi3-ts": "^4.1.2",
     "zod-to-json-schema": "^3.21.1"
   },
   "devDependencies": {

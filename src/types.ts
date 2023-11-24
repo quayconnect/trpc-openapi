@@ -15,6 +15,11 @@ export type OpenApiContentType =
   // eslint-disable-next-line @typescript-eslint/ban-types
   | (string & {});
 
+export interface ResponseStructure {
+  description: string,
+  output: any
+}
+
 export type OpenApiMeta<TMeta = TRPCMeta> = TMeta & {
   openapi?: {
     enabled?: boolean;
@@ -32,6 +37,7 @@ export type OpenApiMeta<TMeta = TRPCMeta> = TMeta & {
       response?: Record<string, any>;
     };
     responseHeaders?: Record<string, OpenAPIV3.HeaderObject | OpenAPIV3.ReferenceObject>;
+    responses: Record<number, ResponseStructure>
   };
 };
 

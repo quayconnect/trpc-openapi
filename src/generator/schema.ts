@@ -1,9 +1,9 @@
 import { TRPCError } from '@trpc/server';
 import { OpenAPIV3 } from 'openapi-types';
-import { z } from 'zod';
+import { ZodObject, ZodSchema, ZodType, ZodTypeAny, z } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
 
-import { OpenApiContentType } from '../types';
+import { OpenApiContentType, ResponseStructure } from '../types';
 import { zodComponentDefinitions } from '../utils/components';
 import {
   instanceofZodType,
@@ -15,6 +15,7 @@ import {
   unwrapZodType,
   zodSupportsCoerce,
 } from '../utils/zod';
+import { generateSchema } from '@anatine/zod-openapi';
 
 export const zodSchemaToOpenApiSchemaObject = (
   zodSchema: z.ZodType,
@@ -200,10 +201,12 @@ export const errorResponseObject: OpenAPIV3.ResponseObject = {
   },
 };
 
+
 export const getResponsesObject = (
   schema: unknown,
   example: Record<string, any> | undefined,
   headers: Record<string, OpenAPIV3.HeaderObject | OpenAPIV3.ReferenceObject> | undefined,
+  responses: Record<number, ResponseStructure>
 ): OpenAPIV3.ResponsesObject => {
   if (!instanceofZodType(schema)) {
     throw new TRPCError({
@@ -212,21 +215,22 @@ export const getResponsesObject = (
     });
   }
 
-  const successResponseObject: OpenAPIV3.ResponseObject = {
-    description: 'Successful response',
-    headers: headers,
-    content: {
-      'application/json': {
-        schema: zodSchemaToOpenApiSchemaObject(schema),
-        example,
-      },
-    },
-  };
+  const responsesAndSchemas: Record<string, OpenAPIV3.ResponseObject> = {};
 
-  return {
-    200: successResponseObject,
-    default: {
-      $ref: '#/components/responses/error',
-    },
-  };
+  for (const [status, structure] of Object.entries(responses)) {
+    const jsonObject = zodToJsonSchema(structure.output)
+    const response: OpenAPIV3.ResponseObject = {
+      description: structure.description,
+      headers: headers,
+      content: {
+        'application/json': {
+          schema: jsonObject as OpenAPIV3.SchemaObject
+        },
+      }
+    }
+
+    responsesAndSchemas[`${status}`] = response;
+  }
+
+  return responsesAndSchemas
 };

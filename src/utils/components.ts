@@ -57,7 +57,7 @@ const generateComponentRelationships = (schema: any, name: string) => {
           componentRelationships[prefix] = {};
         }
 
-        componentRelationships[prefix][key] = {
+        componentRelationships[prefix]![key] = {
           type: 'zodArray',
           component: arrayComponentKey,
           optional: true,
@@ -78,7 +78,7 @@ const generateComponentRelationships = (schema: any, name: string) => {
 
         const componentKey = fullPath.substring(fullPath.lastIndexOf('.') + 1);
 
-        componentRelationships[prefix][key] = {
+        componentRelationships[prefix]![key] = {
           type: typeName,
           optional: prop instanceof z.ZodOptional || currentSchema.shape[key] instanceof z.ZodOptional,
           component: componentKey,
@@ -94,7 +94,7 @@ const generateComponentRelationships = (schema: any, name: string) => {
           componentRelationships[prefix] = {};
         }
 
-        componentRelationships[prefix][key] = {
+        componentRelationships[prefix]![key] = {
           type: prop instanceof z.ZodOptional ? prop._def.innerType._def.typeName : typeName.toString(),
           optional: prop instanceof z.ZodOptional ? true : false,
         };
@@ -104,11 +104,11 @@ const generateComponentRelationships = (schema: any, name: string) => {
 
   processSchema(schema);
 
-  const finalRelationships = {};
+  const finalRelationships: ComponentRelationships = {};
   for (const key in componentRelationships) {
     const parts = key.split('.');
-    const componentName = parts[parts.length - 1];
-    finalRelationships[componentName] = componentRelationships[key];
+    const componentName = parts[parts.length - 1] || '';
+    finalRelationships[componentName] = componentRelationships[key]!;
   }
 
   return finalRelationships;
@@ -120,7 +120,7 @@ export function extractAllComponents(schemasAndNames: Record<string, any>): Reco
 
   for (const [key, value] of Object.entries(schemasAndNames)) {
     const result: Record<string, any> = generateComponentRelationships(value, key);
-    for (const [mapKey, mapValue] of result.entries()) {
+    for (const [mapKey, mapValue] of Object.entries(result)) {
       mergedMap.set(mapKey, mapValue);
     }
   }
@@ -142,7 +142,7 @@ export function extractSchemas(appRouter: OpenApiRouter) {
     const { inputParser, outputParser } = getInputOutputParsers(procedure);
     const inputBody = getInputZodObject(inputParser, pathParameters)
 
-    schemasAndIds.set(id, inputBody)
+    schemasAndIds[id] = inputBody
   })
 
   const components = extractAllComponents(schemasAndIds)

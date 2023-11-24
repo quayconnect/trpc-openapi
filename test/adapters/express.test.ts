@@ -9,6 +9,7 @@ import {
   OpenApiMeta,
   OpenApiRouter,
   createOpenApiExpressMiddleware,
+  generateOpenApiDocument,
 } from '../../src';
 
 const createContextMock = jest.fn();
@@ -58,17 +59,17 @@ describe('express adapter', () => {
   test('with valid routes', async () => {
     const appRouter = t.router({
       sayHelloQuery: t.procedure
-        .meta({ openapi: { method: 'GET', path: '/say-hello' } })
+        .meta({ openapi: { method: 'GET', path: '/say-hello', responses: { 201: { description: 'Success', output: z.object({ greeting: z.string() }) } } } })
         .input(z.object({ name: z.string() }))
         .output(z.object({ greeting: z.string() }))
         .query(({ input }) => ({ greeting: `Hello ${input.name}!` })),
       sayHelloMutation: t.procedure
-        .meta({ openapi: { method: 'POST', path: '/say-hello' } })
+        .meta({ openapi: { method: 'POST', path: '/say-hello', responses: { 201: { description: 'Success', output: z.object({ greeting: z.string() }) } } } })
         .input(z.object({ name: z.string() }))
         .output(z.object({ greeting: z.string() }))
         .mutation(({ input }) => ({ greeting: `Hello ${input.name}!` })),
       sayHelloSlash: t.procedure
-        .meta({ openapi: { method: 'GET', path: '/say/hello' } })
+        .meta({ openapi: { method: 'GET', path: '/say/hello', responses: { 201: { description: 'Success', output: z.object({ greeting: z.string() }) } } } })
         .input(z.object({ name: z.string() }))
         .output(z.object({ greeting: z.string() }))
         .query(({ input }) => ({ greeting: `Hello ${input.name}!` })),
@@ -120,10 +121,18 @@ describe('express adapter', () => {
     close();
   });
 
+  interface ResponseType {
+    description: string,
+    headers: any,
+    content: {
+      'application/json': any
+    }
+  }
+
   test('with basePath', async () => {
     const appRouter = t.router({
       echo: t.procedure
-        .meta({ openapi: { method: 'GET', path: '/echo' } })
+        .meta({ openapi: { method: 'GET', path: '/echo', responses: { 201: { description: 'Success', output: z.object({ payload: z.string(), context: z.undefined() }) } } } })
         .input(z.object({ payload: z.string() }))
         .output(z.object({ payload: z.string(), context: z.undefined() }))
         .query(({ input }) => ({ payload: input.payload })),
@@ -136,6 +145,16 @@ describe('express adapter', () => {
 
     const res = await fetch(`${url}/open-api/echo?payload=jlalmes`, { method: 'GET' });
     const body = await res.json();
+
+
+    const document = generateOpenApiDocument(appRouter, {
+      title: 'tRPC OpenAPI',
+      version: '1.0.0',
+      baseUrl: 'http://',
+    })
+    const response201 = document.paths['/echo']?.get?.responses['201']
+    console.log((response201 as ResponseType).content['application/json'])
+
 
     expect(res.status).toBe(200);
     expect(body).toEqual({
